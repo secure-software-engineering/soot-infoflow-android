@@ -1518,12 +1518,11 @@ public class ARSCFileParser extends AbstractResourceParser {
 	private String readStringUTF8(byte[] remainingData, int stringIdx) throws IOException {
 		// skip the length, will usually be 0x1A1A
 		// int strLen = readUInt16(remainingData, stringIdx);
+		// the length here is somehow weird
+		int strLen = readUInt8(remainingData, stringIdx + 1);
 		stringIdx += 2;
-		
-		StringBuilder builder = new StringBuilder();
-		while (remainingData[stringIdx] != 0)
-			builder.append((char) remainingData[stringIdx++]);
-		return builder.toString();
+		String str = new String(remainingData, stringIdx, strLen, "UTF-8");
+		return str;
 	}
 
 	private int parseStringPoolHeader
