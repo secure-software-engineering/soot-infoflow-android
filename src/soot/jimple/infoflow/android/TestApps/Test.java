@@ -502,7 +502,7 @@ public class Test {
 				taintWrapper = easyTaintWrapper;
 			}
 			app.setTaintWrapper(taintWrapper);
-			app.calculateSourcesSinksEntrypoints("SourcesAndSinks.txt");
+			app.calculateSourcesSinksEntrypoints("SourcesAndSinks.txt", true);
 			
 			if (DEBUG) {
 				app.printEntrypoints();

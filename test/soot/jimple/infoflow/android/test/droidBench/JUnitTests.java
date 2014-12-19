@@ -65,7 +65,7 @@ public class JUnitTests {
 		SetupApplication setupApplication = new SetupApplication(androidJars,
 				droidBenchDir + File.separator + fileName);
 		setupApplication.setTaintWrapper(new EasyTaintWrapper("EasyTaintWrapperSource.txt"));
-		setupApplication.calculateSourcesSinksEntrypoints("SourcesAndSinks.txt");
+		setupApplication.calculateSourcesSinksEntrypoints("SourcesAndSinks.txt", true);
 		setupApplication.setEnableImplicitFlows(enableImplicitFlows);
 		return setupApplication.runInfoflow();
 	}
