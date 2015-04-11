@@ -227,7 +227,8 @@ public class SetupApplication {
 	 * not be read.
 	 */
 	public void calculateSourcesSinksEntrypoints
-			(String sourceSinkFile) throws IOException, XmlPullParserException {
+			(String sourceSinkFile,
+			boolean cleanUpAfterCalculate) throws IOException, XmlPullParserException {
 		PermissionMethodParser parser = PermissionMethodParser.fromFile(sourceSinkFile);
 		Set<AndroidMethod> sources = new HashSet<AndroidMethod>();
 		Set<AndroidMethod> sinks = new HashSet<AndroidMethod>();
@@ -237,7 +238,7 @@ public class SetupApplication {
 			if(am.isSink())
 				sinks.add(am);
 		}
-		calculateSourcesSinksEntrypoints(sources, sinks);
+		calculateSourcesSinksEntrypoints(sources, sinks ,cleanUpAfterCalculate);
 	}
 	
 	/**
@@ -251,7 +252,8 @@ public class SetupApplication {
 	 */
 	public void calculateSourcesSinksEntrypoints
 			(Set<AndroidMethod> sourceMethods,
-			Set<AndroidMethod> sinkMethods) throws IOException, XmlPullParserException {
+			Set<AndroidMethod> sinkMethods,
+			boolean cleanUpAfterCalculate) throws IOException, XmlPullParserException {
 		// To look for callbacks, we need to start somewhere. We use the Android
 		// lifecycle methods for this purpose.
 		ProcessManifest processMan = new ProcessManifest(apkFileLocation);
@@ -280,8 +282,10 @@ public class SetupApplication {
 		
 		System.out.println("Entry point calculation done.");
 		
-		// Clean up everything we no longer need
-		soot.G.reset();
+		if (cleanUpAfterCalculate){
+			// Clean up everything we no longer need
+			soot.G.reset();
+		}
 		
 		// Create the SourceSinkManager
 		{
