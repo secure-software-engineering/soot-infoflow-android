@@ -148,7 +148,7 @@ public class ProcessManifest {
 		else
 		{
 			// In some specific cases, the short name is starting with a lower case character, 
-			// for which we cannot simply take them as non-component classes. 
+			// for which we cannot simply take them as in-default components. 
 			
 			Set<String> dexClasses = getDexClasses();
 			if (dexClasses.contains(className))
