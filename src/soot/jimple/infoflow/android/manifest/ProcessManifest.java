@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.jf.dexlib2.DexFileFactory;
+import org.jf.dexlib2.iface.ClassDef;
+import org.jf.dexlib2.iface.DexFile;
 import org.xmlpull.v1.XmlPullParserException;
 
 import pxb.android.axml.AxmlVisitor;
@@ -28,7 +31,6 @@ import soot.jimple.infoflow.android.axml.ApkHandler;
  * @see <a href="http://developer.android.com/guide/topics/manifest/manifest-intro.html">App Manifest</a>
  */
 public class ProcessManifest {
-	
 	/**
 	 * Enumeration containing the various component types supported in Android
 	 */
@@ -141,10 +143,64 @@ public class ProcessManifest {
 		String packageName = getPackageName();
 		if (className.startsWith("."))
 			return packageName + className;
-		else if (className.substring(0, 1).equals(className.substring(0, 1).toUpperCase()))
-			return packageName + "." + className;
-		else
+		else if (className.startsWith(packageName))
 			return className;
+		else
+		{
+			// In some specific cases, the short name is starting with a lower case character, 
+			// for which we cannot simply take them as non-component classes. 
+			
+			Set<String> dexClasses = getDexClasses();
+			if (dexClasses.contains(className))
+			{
+				return className;
+			}
+			
+			for (String clsRef : dexClasses)
+			{
+				if (clsRef.endsWith("." + className))
+				{
+					return clsRef;
+				}
+			}
+			
+			//Cannot find the class in the list of dex classes, then simply return it
+			System.out.println("ProcessManifest: cannot resolve class " + className);
+			return className;
+		}
+	}
+	
+	/**
+	 * Extract a list of classes from the dex file (classes.dex within the apk file).
+	 * 
+	 * @return The extracted list of classes without considering sub-classes.
+	 */
+	private Set<String> getDexClasses()
+	{	
+		Set<String> dexClasses = new HashSet<String>();
+		
+		try {
+			DexFile dexFile = DexFileFactory.loadDexFile(new File(apk.getAbsolutePath()), targetSdkVersion());
+			for (ClassDef classDef: dexFile.getClasses()) 
+			{
+				String cls = classDef.getType();
+				if (cls.contains("$"))
+				{
+					//do not consider sub-classes
+					continue;
+				}
+				
+				cls = cls.replace("/", ".").substring(1, cls.length()-1);
+				
+				dexClasses.add(cls);
+			}
+		} 
+		catch (IOException e) 
+		{
+			e.printStackTrace();
+		}
+		
+		return dexClasses;
 	}
 	
 	/**

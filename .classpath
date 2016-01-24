@@ -8,5 +8,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/axml-2.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/heros"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jasmin"/>
+	<classpathentry kind="lib" path="lib/dexlib2-2.1.1-dev.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
