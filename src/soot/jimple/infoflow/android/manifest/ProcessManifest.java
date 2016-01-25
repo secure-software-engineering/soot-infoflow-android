@@ -10,12 +10,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jf.dexlib2.DexFileFactory;
-import org.jf.dexlib2.iface.ClassDef;
-import org.jf.dexlib2.iface.DexFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmlpull.v1.XmlPullParserException;
 
 import pxb.android.axml.AxmlVisitor;
+import soot.Scene;
+import soot.SootClass;
 import soot.jimple.infoflow.android.axml.AXmlAttribute;
 import soot.jimple.infoflow.android.axml.AXmlHandler;
 import soot.jimple.infoflow.android.axml.AXmlNode;
@@ -31,6 +32,9 @@ import soot.jimple.infoflow.android.axml.ApkHandler;
  * @see <a href="http://developer.android.com/guide/topics/manifest/manifest-intro.html">App Manifest</a>
  */
 public class ProcessManifest {
+	
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	
 	/**
 	 * Enumeration containing the various component types supported in Android
 	 */
@@ -147,61 +151,34 @@ public class ProcessManifest {
 			return className;
 		else
 		{
-			// In some specific cases, the short name is starting with a lower case character, 
-			// for which we cannot simply take them as in-default components. 
+			// In some cases, components declared in AndroidManifest start without package prefix 
+			// and even without a dot to indicate they start with the default package name.
+			// What's worse, the components can even named themselves with starting from a lower case character, 
+			// which will eventually let the current implementation fail.
+			// The consequence is that those components are not considered in the entry point classes, 
+			// letting those components are not analysed at all.
 			
-			Set<String> dexClasses = getDexClasses();
-			if (dexClasses.contains(className))
+			SootClass sootClass = Scene.v().getSootClass(className);
+			if (! sootClass.isPhantom())
 			{
 				return className;
 			}
 			
-			for (String clsRef : dexClasses)
+			sootClass = Scene.v().getSootClass(packageName + "." + className);
+			if (! sootClass.isPhantom())
 			{
-				if (clsRef.endsWith("." + className))
-				{
-					return clsRef;
-				}
+				return packageName + "." + className;
 			}
 			
-			//Cannot find the class in the list of dex classes, then simply return it
-			System.out.println("ProcessManifest: cannot resolve class " + className);
+			// Cannot find the correct class in context, simply return it with a warning
+			if (null != logger)
+			{
+				logger.warn("Unusual! cannot resolve/expand class " + className);
+			}
 			return className;
 		}
 	}
 	
-	/**
-	 * Extract a list of classes from the dex file (classes.dex within the apk file).
-	 * 
-	 * @return The extracted list of classes without considering sub-classes.
-	 */
-	private Set<String> getDexClasses()
-	{	
-		Set<String> dexClasses = new HashSet<String>();
-		
-		try {
-			DexFile dexFile = DexFileFactory.loadDexFile(new File(apk.getAbsolutePath()), targetSdkVersion());
-			for (ClassDef classDef: dexFile.getClasses()) 
-			{
-				String cls = classDef.getType();
-				if (cls.contains("$"))
-				{
-					//do not consider sub-classes
-					continue;
-				}
-				
-				cls = cls.replace("/", ".").substring(1, cls.length()-1);
-				
-				dexClasses.add(cls);
-			}
-		} 
-		catch (IOException e) 
-		{
-			e.printStackTrace();
-		}
-		
-		return dexClasses;
-	}
 	
 	/**
 	 * Returns the handler which parsed and holds the manifest's data.
