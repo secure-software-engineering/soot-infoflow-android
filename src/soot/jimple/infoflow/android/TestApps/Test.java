@@ -58,6 +58,7 @@ import soot.jimple.infoflow.taintWrappers.EasyTaintWrapper;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.jimple.infoflow.util.SystemClassHandler;
 import soot.options.Options;
+import st.cs.uni.saarland.de.MudflowResultsHandler;
 
 public class Test {
 	
@@ -634,7 +635,9 @@ public class Test {
 			}
 			
 			System.out.println("Running data flow analysis...");
-			final InfoflowResults res = app.runInfoflow(new MyResultsAvailableHandler());
+			MudflowResultsHandler resultsHandler = new MudflowResultsHandler();
+			resultsHandler.setApkName(new File(fileName).getName().replace(".apk", ""));
+			final InfoflowResults res = app.runInfoflow(resultsHandler);
 			System.out.println("Analysis has run for " + (System.nanoTime() - beforeRun) / 1E9 + " seconds");
 			
 			if (config.getLogSourcesAndSinks()) {

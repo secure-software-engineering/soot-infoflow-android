@@ -324,14 +324,14 @@ public class AndroidSourceSinkManager implements ISourceSinkManager {
 	}
 
 	protected SourceInfo getSourceInfo(Stmt sCallSite, SourceType type) {
-		if (type == SourceType.UISource || type == SourceType.Callback) {
+		/*if (type == SourceType.UISource || type == SourceType.Callback) {
 			if (sCallSite instanceof DefinitionStmt) {
 				DefinitionStmt defStmt = (DefinitionStmt) sCallSite;
 				return new SourceInfo(AccessPathFactory.v().createAccessPath(
 						defStmt.getLeftOp(), true));
 			}
 			return null;
-		}
+		}*/
 		
 		// The only other possibility is to have a method invocation
 		if (!sCallSite.containsInvokeExpr())
