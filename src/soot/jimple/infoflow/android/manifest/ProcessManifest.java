@@ -10,9 +10,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xmlpull.v1.XmlPullParserException;
 
 import pxb.android.axml.AxmlVisitor;
+import soot.Scene;
+import soot.SootClass;
 import soot.jimple.infoflow.android.axml.AXmlAttribute;
 import soot.jimple.infoflow.android.axml.AXmlHandler;
 import soot.jimple.infoflow.android.axml.AXmlNode;
@@ -28,6 +32,8 @@ import soot.jimple.infoflow.android.axml.ApkHandler;
  * @see <a href="http://developer.android.com/guide/topics/manifest/manifest-intro.html">App Manifest</a>
  */
 public class ProcessManifest {
+	
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 	
 	/**
 	 * Enumeration containing the various component types supported in Android
@@ -141,11 +147,38 @@ public class ProcessManifest {
 		String packageName = getPackageName();
 		if (className.startsWith("."))
 			return packageName + className;
-		else if (className.substring(0, 1).equals(className.substring(0, 1).toUpperCase()))
-			return packageName + "." + className;
-		else
+		else if (className.startsWith(packageName))
 			return className;
+		else
+		{
+			// In some cases, components declared in AndroidManifest start without package prefix 
+			// and even without a dot to indicate they start with the default package name.
+			// What's worse, the components can even named themselves with starting from a lower case character, 
+			// which will eventually let the current implementation fail.
+			// The consequence is that those components are not considered in the entry point classes, 
+			// letting those components are not analysed at all.
+			
+			SootClass sootClass = Scene.v().getSootClass(className);
+			if (! sootClass.isPhantom())
+			{
+				return className;
+			}
+			
+			sootClass = Scene.v().getSootClass(packageName + "." + className);
+			if (! sootClass.isPhantom())
+			{
+				return packageName + "." + className;
+			}
+			
+			// Cannot find the correct class in context, simply return it with a warning
+			if (null != logger)
+			{
+				logger.warn("Unusual! cannot resolve/expand class " + className);
+			}
+			return className;
+		}
 	}
+	
 	
 	/**
 	 * Returns the handler which parsed and holds the manifest's data.
