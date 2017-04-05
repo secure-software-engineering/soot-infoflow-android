@@ -63,6 +63,7 @@ import soot.jimple.infoflow.source.data.ISourceSinkDefinitionProvider;
 import soot.jimple.infoflow.source.data.SourceSinkDefinition;
 import soot.jimple.infoflow.taintWrappers.ITaintPropagationWrapper;
 import soot.options.Options;
+import st.cs.uni.saarland.de.MudflowHelper;
 
 public class SetupApplication {
 
@@ -388,6 +389,7 @@ public class SetupApplication {
 		ProcessManifest processMan = new ProcessManifest(apkFileLocation);
 		this.appPackageName = processMan.getPackageName();
 		this.entrypoints = processMan.getEntryPointClasses();
+		MudflowHelper.setPackagePrefix(this.appPackageName);
 
 		// Parse the resource file
 		long beforeARSC = System.nanoTime();
@@ -726,6 +728,8 @@ public class SetupApplication {
 	 * @param constructCallgraph True if a callgraph shall be constructed, otherwise false
 	 */
 	private void initializeSoot(boolean constructCallgraph) {
+		Options.v().set_exclude(MudflowHelper.getAdLibs());
+		Options.v().set_process_multiple_dex(true);
 		Options.v().set_no_bodies_for_excluded(true);
 		Options.v().set_allow_phantom_refs(true);
 		Options.v().set_output_format(Options.output_format_none);
