@@ -399,7 +399,8 @@ public abstract class AbstractCallbackAnalyzer {
 		SootClass curClass = inv.getMethod().getDeclaringClass();
 		while (curClass != null) {
 			if (curClass.getName().equals("android.app.Activity")
-					|| curClass.getName().equals("android.support.v7.app.ActionBarActivity"))
+					|| curClass.getName().equals("android.support.v7.app.ActionBarActivity")
+					|| curClass.getName().equals("android.support.v7.app.AppCompatActivity"))
 				return true;
 			if (curClass.declaresMethod("void setContentView(int)"))
 				return false;

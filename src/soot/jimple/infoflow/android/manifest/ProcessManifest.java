@@ -563,9 +563,9 @@ public class ProcessManifest {
 					boolean actionFilter = false;
 					boolean categoryFilter = false;
 					for(AXmlNode intentFilter : activityChildren.getChildren()) {
-						if(intentFilter.toString().equals("<action name=\"android.intent.action.MAIN\">"))
+						if (intentFilter.getTag().equals("action") && intentFilter.getAttribute("name").getValue().toString().equals("android.intent.action.MAIN"))
 							actionFilter = true;
-						else if(intentFilter.toString().equals("<category name=\"android.intent.category.LAUNCHER\">"))
+						if (intentFilter.getTag().equals("category") && intentFilter.getAttribute("name").getValue().toString().equals("android.intent.category.LAUNCHER"))
 							categoryFilter = true;
 					}
 					
