@@ -539,7 +539,7 @@ public abstract class AbstractCallbackAnalyzer {
 	 * @return True if the method is new, i.e., has not been seen before, otherwise
 	 * false
 	 */
-	protected boolean checkAndAddMethod(SootMethod method, SootClass baseClass,
+	public boolean checkAndAddMethod(SootMethod method, SootClass baseClass,
 			CallbackType callbackType) {
 		// Do not call system methods
 		if (SystemClassHandler.isClassInSystemPackage(method.getDeclaringClass().getName()))

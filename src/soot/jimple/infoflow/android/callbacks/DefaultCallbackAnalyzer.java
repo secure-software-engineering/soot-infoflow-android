@@ -364,7 +364,7 @@ public class DefaultCallbackAnalyzer extends AbstractCallbackAnalyzer implements
 	}
 	
 	@Override
-	protected boolean checkAndAddMethod(SootMethod method, SootClass baseClass,
+	public boolean checkAndAddMethod(SootMethod method, SootClass baseClass,
 			CallbackType callbackType) {
 		if (super.checkAndAddMethod(method, baseClass, callbackType)) {
 			// Has this entry point been excluded?

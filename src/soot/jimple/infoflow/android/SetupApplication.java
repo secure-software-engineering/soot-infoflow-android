@@ -759,8 +759,10 @@ public class SetupApplication {
 								SootMethod callbackMethod = currentClass.getMethodUnsafe(subSig);
 								if (callbackMethod != null) {
 									if (this.callbackMethods.put(callbackClass,
-											new CallbackDefinition(callbackMethod, CallbackType.Widget)))
+											new CallbackDefinition(callbackMethod, CallbackType.Widget))) {
+										jimpleClass.checkAndAddMethod(callbackMethod,currentClass,CallbackType.Widget);
 										hasNewCallback = true;
+									}
 									break;
 								}
 								if (!currentClass.hasSuperclass()) {
