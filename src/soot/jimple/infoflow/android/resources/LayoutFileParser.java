@@ -403,6 +403,9 @@ public class LayoutFileParser extends AbstractResourceParser {
 			else if (attr.getType() == AxmlVisitor.TYPE_STRING && attrName.equals("text")) {
 				// To avoid unrecognized attribute for "text" field
 			}
+			else if (attr.getType() == AxmlVisitor.TYPE_STRING && attrName.equals("hint")) {
+				// To avoid unrecognized attribute for "hint" field
+			}
 			else if (loadAdditionalAttributes) {
 				additionalAttributes.put(attrName, attr.getValue());
 			}
