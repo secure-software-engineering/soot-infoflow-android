@@ -974,6 +974,9 @@ public class SetupApplication {
 			sootConfig.setSootOptions(Options.v());
 
 		Options.v().set_soot_classpath(getClasspath());
+		
+		Options.v().set_process_multiple_dex(true);
+		
 		Main.v().autoSetOptions();
 
 		// Configure the callgraph algorithm
