@@ -1191,9 +1191,7 @@ public class SetupApplication {
 		try {
 			parseAppResources();
 		} catch (IOException | XmlPullParserException e) {
-			logger.error("Callgraph construction failed: " + e.getMessage());
 			e.printStackTrace();
-			throw new RuntimeException("Callgraph construction failed", e);
 		}
 
 		// Create the data flow tracker
