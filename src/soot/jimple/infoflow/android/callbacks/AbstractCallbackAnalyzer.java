@@ -63,6 +63,9 @@ public abstract class AbstractCallbackAnalyzer {
 	protected final SootClass scFragmentTransaction = Scene.v().getSootClassUnsafe("android.app.FragmentTransaction");
 	protected final SootClass scFragment = Scene.v().getSootClassUnsafe(AndroidEntryPointConstants.FRAGMENTCLASS);
 	
+	protected final SootClass scSupportFragmentTransaction = Scene.v().getSootClassUnsafe("android.support.v4.app.FragmentTransaction");
+	protected final SootClass scSupportFragment = Scene.v().getSootClassUnsafe("android.support.v4.app.Fragment");
+	
 	protected final InfoflowAndroidConfiguration config;
 	protected final Set<SootClass> entryPointClasses;
 	protected final Set<String> androidCallbacks;
@@ -292,34 +295,34 @@ public abstract class AbstractCallbackAnalyzer {
 	 * @param method The method to check
 	 */
 	protected void analyzeMethodForFragmentTransaction(SootClass lifecycleElement, SootMethod method) {
-		if (scFragment == null || scFragmentTransaction == null)
+		if (scFragment == null || scFragmentTransaction == null || scSupportFragment == null || scSupportFragmentTransaction == null)
 			return;
 		if (!method.isConcrete() || !method.hasActiveBody())
 			return;
 		
 		// first check if there is a Fragment manager, a fragment transaction and a call to 
-		// the add method which adds the fragment to the transaction
+		// the add or replace methods which add the fragment to the transaction
 		boolean isFragmentManager = false;
 		boolean isFragmentTransaction = false;
 		boolean isAddTransaction = false;
 		for (Unit u : method.getActiveBody().getUnits()) {
 			Stmt stmt = (Stmt) u;
 			if (stmt.containsInvokeExpr()) {
-				if (stmt.getInvokeExpr().getMethod().getName().equals("getFragmentManager"))
+				String methodName = stmt.getInvokeExpr().getMethod().getName();
+				if (methodName.equals("getFragmentManager") || methodName.equals("getSupportFragmentManager"))
 					isFragmentManager = true;
-				else if (stmt.getInvokeExpr().getMethod().getName().equals("beginTransaction"))
+				else if (methodName.equals("beginTransaction"))
 					isFragmentTransaction = true;
-				else if (stmt.getInvokeExpr().getMethod().getName().equals("add"))
+				else if (methodName.equals("add") || methodName.equals("replace"))
 					isAddTransaction = true;
-				else if (stmt.getInvokeExpr().getMethod().getName().equals("inflate")
-						&& stmt.getInvokeExpr().getArgCount() > 1) {
+				else if (methodName.equals("inflate") && stmt.getInvokeExpr().getArgCount() > 1) {
 					Value arg = stmt.getInvokeExpr().getArg(0);
 					if (arg instanceof IntConstant)
 						fragmentIDs.put(lifecycleElement, ((IntConstant) arg).value);
 				}
 			}
 		}
-		
+
 		//now get the fragment class from the second argument of the add method from the transaction 
 		if (isFragmentManager && isFragmentTransaction && isAddTransaction)
 			for (Unit u : method.getActiveBody().getUnits()) {
@@ -330,16 +333,19 @@ public abstract class AbstractCallbackAnalyzer {
 						InstanceInvokeExpr iinvExpr = (InstanceInvokeExpr) invExpr;
 						
 						// Make sure that we referring to the correct class and method
-						if (Scene.v().getFastHierarchy().canStoreType(iinvExpr.getBase().getType(), scFragmentTransaction.getType())
-								&& stmt.getInvokeExpr().getMethod().getName().equals("add")) {
+						isFragmentTransaction = Scene.v().getFastHierarchy().canStoreType(iinvExpr.getBase().getType(), scFragmentTransaction.getType()) ||
+								                Scene.v().getFastHierarchy().canStoreType(iinvExpr.getBase().getType(), scSupportFragmentTransaction.getType());
+						isAddTransaction = stmt.getInvokeExpr().getMethod().getName().equals("add") ||
+								           stmt.getInvokeExpr().getMethod().getName().equals("replace");
+						if (isFragmentTransaction && isAddTransaction) {
 							// We take all fragments passed to the method
 							for (int i = 0; i < stmt.getInvokeExpr().getArgCount(); i++) {
 								Value br = stmt.getInvokeExpr().getArg(i);
-								
 								// Is this a fragment?
 								if (br.getType() instanceof RefType) {
 									RefType rt = (RefType) br.getType();
-									if (Scene.v().getFastHierarchy().canStoreType(rt, scFragment.getType()))
+									if (Scene.v().getFastHierarchy().canStoreType(rt, scFragment.getType()) ||
+										Scene.v().getFastHierarchy().canStoreType(rt, scSupportFragment.getType()))
 										fragmentClasses.put(method.getDeclaringClass(), rt.getSootClass());
 								}
 							}
