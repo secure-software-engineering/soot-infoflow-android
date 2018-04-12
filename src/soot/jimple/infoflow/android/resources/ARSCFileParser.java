@@ -1280,7 +1280,14 @@ public class ARSCFileParser extends AbstractResourceParser {
 								for (int j = 0; j < ((ResTable_Map_Entry) entry).count; j++) {
 									ResTable_Map map = new ResTable_Map();
 									entryOffset = readComplexValue(map, remainingData, entryOffset);
-									cmpRes.value.put(map.name + "", parseValue(map.value));
+									//If the map.value is a StringResource in the context of a array, then it gets a numbered value for the cmpRes.value-Map
+									//In the previous code the values ​​were always stored with the same key
+									if(resType.typeName.equals("array") &&  parseValue(map.value) instanceof StringResource) {
+										cmpRes.value.put(j + "", parseValue(map.value));
+									}
+									else {
+										cmpRes.value.put(map.name + "", parseValue(map.value));
+									}
 								}
 							}
 							else {
